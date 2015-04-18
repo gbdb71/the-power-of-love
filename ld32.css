@@ -1,0 +1,19 @@
+body {
+    background-color: #446;
+    color: #f4eeee;
+    font-family: sans-serif;
+}
+
+h1 {
+    text-align: center;
+    margin: 1em;
+}
+
+#ld32 {
+    display: block;
+    margin: auto;
+}
+
+#ld32.loaded {
+    cursor: none;
+}
