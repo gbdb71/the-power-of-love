@@ -40,8 +40,9 @@ var ld32 = {
         colors: {
             fov: 'rgba(60, 0, 0, 0.1)',
             selected: 'rgba(90, 90, 140, 0.5)',
-            falling: '#000',
-            walking: '#000',
+            wandering: '#000',
+            selecting_mate: '#773355',
+            following_mate: '#dd5588',
             ascending: '#f7bd13'
         },
         list: []

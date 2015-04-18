@@ -6,6 +6,30 @@ function tick_game(game) {
     for (var i = 0; i < game.peoples.list.length; ++i) {
         var people = game.peoples.list[i];
 
+        if (people.state == 'following_mate' || people.state == 'ascending')
+            people.target_fov_center = Math.atan2(people.mate.y - people.y, people.mate.x - people.x);
+        else
+            people.target_fov_center = Math.atan2(-0.25 * people.dy, people.dx);
+        var forward_delta = people.target_fov_center - people.fov_center;
+        var backward_delta = -forward_delta;
+        if (forward_delta < 0)
+            forward_delta += 2 * Math.PI;
+        if (backward_delta < 0)
+            backward_delta += 2 * Math.PI;
+        if (forward_delta < backward_delta) {
+            if (people.target_fov_center < people.fov_center)
+                people.target_fov_center += 2 * Math.PI;
+        } else if (people.target_fov_center > people.fov_center)
+            people.target_fov_center -= 2 * Math.PI;
+        var delta = people.target_fov_center - people.fov_center;
+        people.fov_center_velocity += delta * 0.02;
+        people.fov_center_velocity *= 0.85;
+        people.fov_center += people.fov_center_velocity;
+        if (people.fov_center < 0)
+            people.fov_center += 2 * Math.PI;
+        else if (people.fov_center >= 2 * Math.PI)
+            people.fov_center -= 2 * Math.PI;
+
         // TODO: correct constant acceleration equation
         // TODO: continuous collision detection
 
@@ -122,11 +146,6 @@ function tick_game(game) {
                 break;
             case 'selecting_mate':
                 var animation = Math.min(unlerp(game.time - people.select_time, 0, 0.5), 1);
-                var target_center = people.orientation == 'left' ? Math.PI : Math.PI * 2;
-                var delta = target_center - people.fov_center;
-                people.fov_center_velocity += delta * 0.02;
-                people.fov_center_velocity *= 0.85;
-                people.fov_center += people.fov_center_velocity;
                 var start_angle = people.fov_center + game.peoples.fov_angle * -0.5;
                 var stop_angle = people.fov_center + game.peoples.fov_angle * 0.5;
                 if (start_angle < 0) {

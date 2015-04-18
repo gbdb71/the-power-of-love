@@ -27,7 +27,7 @@ function draw_game(game, context) {
             context.moveTo(people.x, people.y);
             context.arc(people.x, people.y, people.fov_radius, start_angle, stop_angle);
             context.fill();
-        } else if (people.state == 'following_mate') {
+        } else if (people.state == 'following_mate' && people.movement_state != 'ascending') {
             animation = Math.min(unlerp(game.time - people.mate_time, 0, 0.5), 1);
             var mate_distance =distance(people, people.mate);
             var angle_center = lerp(animation, people.fov_center, Math.atan2(people.mate.y - people.y, people.mate.x - people.x));
@@ -61,9 +61,15 @@ function draw_game(game, context) {
 
     for (i = 0; i < game.peoples.list.length; ++i) {
         people = game.peoples.list[i];
-        context.fillStyle = game.peoples.colors[people.movement_state];
+        context.fillStyle = game.peoples.colors[people.movement_state == 'ascending' ? 'ascending' : people.state];
         context.beginPath();
         context.arc(people.x, people.y, game.peoples.radius, 0, 2 * Math.PI);
+        context.fill();
+        context.fillStyle = 'rgba(255, 255, 255, 0.95)';
+        var dx = Math.cos(people.fov_center);
+        var dy = Math.sin(people.fov_center);
+        context.beginPath();
+        context.arc(people.x + 4 * dx, people.y + 4 * dy, game.peoples.radius * 0.55, 0, 2 * Math.PI);
         context.fill();
     }
 
