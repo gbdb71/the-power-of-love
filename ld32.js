@@ -41,7 +41,8 @@ var ld32 = {
             fov: 'rgba(60, 0, 0, 0.1)',
             selected: 'rgba(90, 90, 140, 0.5)',
             falling: '#000',
-            walking: '#000'
+            walking: '#000',
+            ascending: '#f7bd13'
         },
         list: []
     },

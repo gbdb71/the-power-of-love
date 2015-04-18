@@ -25,6 +25,21 @@ function tick_game(game) {
             people.movement_state = 'dead';
         }
         switch (people.movement_state) {
+            case 'ascending':
+                if ((people.orientation == 'left' && people.x < people.mate.x) || (people.orientation == 'right' && people.x > people.mate.x)) {
+                    if (distance(people, people.mate) > 3 * game.peoples.radius) {
+                        people.orientation = people.orientation == 'left' ? 'right' : 'left';
+                        people.dx = (people.orientation == 'left' ? -1 : 1) * game.peoples.run_velocity;
+                    }
+                }
+                people.dy -= 0.1;
+                if (people.y < -game.height) {
+                    people.state = 'ascended';
+                    people.movement_state = 'dead';
+                    people.mate.state = 'ascended';
+                    people.mate.movement_state = 'dead';
+                }
+                break;
             case 'falling':
                 var people_bottom = people.y + game.peoples.radius;
                 for (var j = 0; j < game.platforms.list.length; ++j) {
@@ -60,6 +75,25 @@ function tick_game(game) {
                     }
                     if ((people.mate.movement_state == 'walking' && people.mate.y < people.y) || people.mate.y < people.y - game.platforms.height * 2) {
                         people.dy = -Math.min(game.peoples.jump_velocity, 0.2 * (people.y - people.mate.y));
+                        people.movement_state = 'falling';
+                        people.platform = null;
+                        break;
+                    }
+                }
+
+                if (people.state == 'selecting_mate' && game.time - people.select_time > 2.0) {
+                    var is_the_lowest = true;
+                    for (j = 0; j < game.peoples.list.length; ++j) {
+                        other_people = game.peoples.list[j];
+                        if (other_people != people && other_people.movement_state != 'dead' && (other_people.y > people.y || other_people.state != 'selecting_mate')) {
+                            is_the_lowest = false;
+                            break;
+                        }
+                    }
+                    if (is_the_lowest) {
+                        people.orientation = Math.random() > 0.5 ? 'left' : 'right';
+                        people.dx = (people.orientation == 'left' ? -1 : 1) * game.peoples.run_velocity;
+                        people.dy = -game.peoples.jump_velocity;
                         people.movement_state = 'falling';
                         people.platform = null;
                         break;
@@ -118,9 +152,18 @@ function tick_game(game) {
                 }
                 break;
             case 'following_mate':
-                if (people.mate.state == 'dead') {
+                if (people.mate.state == 'dead' || people.mate.state == 'ascended') {
                     people.state = 'wandering';
                     people.mate = null;
+                    break;
+                }
+                if (people.mate.state == 'following_mate' && people.mate.mate == people && distance(people, people.mate) < 2 * game.peoples.radius) {
+                    if (people.movement_state == 'walking' && people.mate.movement_state == 'walking') {
+                        people.ascention_time = game.time;
+                        people.mate.ascention_time = game.time;
+                        people.movement_state = 'ascending';
+                        people.mate.movement_state = 'ascending';
+                    }
                 }
                 break;
         }
