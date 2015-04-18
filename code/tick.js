@@ -20,14 +20,17 @@ function tick_game(game) {
         people.x += people.dx;
         people.y += people.dy;
 
+        if (people.y > game.height * 2) {
+            people.state = 'dead';
+            people.movement_state = 'dead';
+        }
         switch (people.movement_state) {
             case 'falling':
-                var people_top = people.y - game.peoples.radius;
                 var people_bottom = people.y + game.peoples.radius;
                 for (var j = 0; j < game.platforms.list.length; ++j) {
                     var platform = game.platforms.list[j];
-                    if (people.x >= platform.x_min && people.x < platform.x_max && people_bottom >= platform.y && people_top <= platform.y) {
-                        people.dx = (people.orientation == 'left' ? -1 : 1) * game.peoples.walk_velocity;
+                    if (people.dy > 0 && people.x >= platform.x_min && people.x < platform.x_max && people_bottom >= platform.y && people.y - people.dy <= platform.y) {
+                        people.dx = (people.orientation == 'left' ? -1 : 1) * (people.state == "following_mate" ? game.peoples.run_velocity : game.peoples.walk_velocity);
                         people.dy = 0;
                         people.y = platform.y - game.peoples.radius;
                         people.movement_state = 'walking';
@@ -38,8 +41,39 @@ function tick_game(game) {
                 break;
             case 'walking':
                 if (people.x < people.platform.x_min || people.x >= people.platform.x_max) {
-                    people.orientation = people.orientation == 'left' ? 'right' : 'left';
-                    people.dx = (people.orientation == 'left' ? -1 : 1) * game.peoples.walk_velocity;
+                    if (people.state == 'following_mate' && people.mate.y > people.y) {
+                        people.movement_state = 'falling';
+                        people.platform = null;
+                        break;
+                    } else {
+                        people.orientation = people.orientation == 'left' ? 'right' : 'left';
+                        people.dx = (people.orientation == 'left' ? -1 : 1) * (people.state == "following_mate" ? game.peoples.run_velocity : game.peoples.walk_velocity);
+                    }
+                }
+
+                if (people.state == 'following_mate') {
+                    if ((people.orientation == 'left' && people.x < people.mate.x) || (people.orientation == 'right' && people.x > people.mate.x)) {
+                        if (distance(people, people.mate) > 3 * game.peoples.radius) {
+                            people.orientation = people.orientation == 'left' ? 'right' : 'left';
+                            people.dx = (people.orientation == 'left' ? -1 : 1) * game.peoples.run_velocity;
+                        }
+                    }
+                    if ((people.mate.movement_state == 'walking' && people.mate.y < people.y) || people.mate.y < people.y - game.platforms.height * 2) {
+                        people.dy = -Math.min(game.peoples.jump_velocity, 0.2 * (people.y - people.mate.y));
+                        people.movement_state = 'falling';
+                        people.platform = null;
+                        break;
+                    }
+                }
+
+                for (j = 0; j < people.platform.jumpers.length; ++j) {
+                    var jumper = people.platform.jumpers[j];
+                    if (people.x > jumper - game.platforms.jumper_width * 0.25 && people.x < jumper + game.platforms.jumper_width * 0.25) {
+                        people.dy = -game.peoples.jump_velocity;
+                        people.movement_state = 'falling';
+                        people.platform = null;
+                        break;
+                    }
                 }
                 break;
         }
@@ -56,7 +90,7 @@ function tick_game(game) {
                 var animation = Math.min(unlerp(game.time - people.select_time, 0, 0.5), 1);
                 var target_center = people.orientation == 'left' ? Math.PI : Math.PI * 2;
                 var delta = target_center - people.fov_center;
-                people.fov_center_velocity +=  delta * 0.02;
+                people.fov_center_velocity += delta * 0.02;
                 people.fov_center_velocity *= 0.85;
                 people.fov_center += people.fov_center_velocity;
                 var start_angle = people.fov_center + game.peoples.fov_angle * -0.5;
@@ -66,7 +100,7 @@ function tick_game(game) {
                     stop_angle += Math.PI * 2;
                 }
                 people.fov_radius = lerp(animation, game.peoples.radius, game.peoples.fov_radius);
-                for (j=0; j<game.peoples.list.length; ++j) {
+                for (j = 0; j < game.peoples.list.length; ++j) {
                     var other_people = game.peoples.list[j];
                     if (other_people != people) {
                         if (distance(people, other_people) < people.fov_radius) {
@@ -84,6 +118,10 @@ function tick_game(game) {
                 }
                 break;
             case 'following_mate':
+                if (people.mate.state == 'dead') {
+                    people.state = 'wandering';
+                    people.mate = null;
+                }
                 break;
         }
     }

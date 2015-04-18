@@ -22,6 +22,8 @@ var ld32 = {
     background_color: '#f4eeee',
     platforms: {
         height: 20,
+        jumper_width: 20,
+        jumper_height: 2,
         background_color: '#a45040',
         list: []
     },
@@ -31,7 +33,9 @@ var ld32 = {
         fov_radius: 140,
         fov_angle: Math.PI * 0.3,
         gravity: 20,
-        walk_velocity: 2,
+        jump_velocity: 10,
+        walk_velocity: 1,
+        run_velocity: 2,
         falling_friction: {x: 0.01, y: 0.01},
         colors: {
             fov: 'rgba(60, 0, 0, 0.1)',

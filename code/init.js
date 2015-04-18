@@ -29,6 +29,10 @@ function init_game(game, canvas) {
         }
     });
 
+    canvas.addEventListener('contextmenu', function(event) {
+        event.preventDefault();
+    });
+
     document.addEventListener('mouseup', function (event) {
         if (event.button == 0) {
             game.cursor.just_released = true;
@@ -46,7 +50,8 @@ function init_level(game, level) {
         game.platforms.list.push({
             y: platform.y,
             x_min: platform.x_min,
-            x_max: platform.x_max
+            x_max: platform.x_max,
+            jumpers: platform.jumpers.slice(0)
         });
     }
     game.peoples.list = [];

@@ -15,6 +15,10 @@ function draw_game(game, context) {
                 context.fill();
             }
         }
+    }
+
+    for (i = 0; i < game.peoples.list.length; ++i) {
+        people = game.peoples.list[i];
         if (people.state == 'selecting_mate') {
             var start_angle = people.fov_center + game.peoples.fov_angle * -0.5;
             var stop_angle = people.fov_center + game.peoples.fov_angle * 0.5;
@@ -51,6 +55,8 @@ function draw_game(game, context) {
     for (i = 0; i < game.platforms.list.length; ++i) {
         var platform = game.platforms.list[i];
         context.fillRect(platform.x_min, platform.y, platform.x_max - platform.x_min, game.platforms.height);
+        for (j = 0; j < platform.jumpers.length; ++j)
+            context.fillRect(platform.jumpers[j] - game.platforms.jumper_width * 0.5, platform.y - game.platforms.jumper_height, game.platforms.jumper_width, game.platforms.jumper_height);
     }
 
     for (i = 0; i < game.peoples.list.length; ++i) {
