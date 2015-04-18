@@ -17,14 +17,15 @@ var ld32 = {
             y: -1
         }
     },
+    state: 'playing',
     current_level: 0,
     levels: [],
-    background_color: '#f4eeee',
+    background_color: 'rgba(244 ,238, 238,',
     platforms: {
         height: 20,
         jumper_width: 20,
         jumper_height: 2,
-        background_color: '#a45040',
+        background_color: 'rgba(164, 80, 64,',
         list: []
     },
     peoples: {

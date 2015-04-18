@@ -1,7 +1,7 @@
 function draw_game(game, context) {
     context.clearRect(0, 0, context.canvas.width, context.canvas.height);
 
-    context.fillStyle = game.background_color;
+    context.fillStyle = game.background_color + Math.min(game.time * 20, 1) + ')';
     context.fillRect(0, 0, game.width + 1, game.height + 1);
 
     for (var i = 0; i < game.peoples.list.length; ++i) {
@@ -51,7 +51,7 @@ function draw_game(game, context) {
 
     draw_arrows(game, context, 'back');
 
-    context.fillStyle = game.platforms.background_color;
+    context.fillStyle = game.platforms.background_color + Math.min((game.time - game.level_time) * 6, 1) + ')';
     for (i = 0; i < game.platforms.list.length; ++i) {
         var platform = game.platforms.list[i];
         context.fillRect(platform.x_min, platform.y, platform.x_max - platform.x_min, game.platforms.height);

@@ -268,6 +268,19 @@ function tick_game(game) {
         });
     }
 
+    var everybody_is_gone = true;
+    for (i = 0; i < game.peoples.list.length; ++i) {
+        people = game.peoples.list[i];
+        if (people.state != 'dead' && people.state != 'ascended') {
+            everybody_is_gone = false;
+            break;
+        }
+    }
+    if (everybody_is_gone == true) {
+        game.current_level = (game.current_level + 1) % game.levels.length;
+        init_level(game, game.levels[game.current_level]);
+    }
+
     game.cursor.just_pressed = false;
     game.cursor.just_released = false;
     game.time += 1 / game.tick_fps;

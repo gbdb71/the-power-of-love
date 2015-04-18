@@ -44,6 +44,7 @@ function init_game(game, canvas) {
 }
 
 function init_level(game, level) {
+    game.level_time = game.time;
     game.platforms.list = [];
     for (var i = 0; i < level.platforms.length; ++i) {
         var platform = level.platforms[i];
