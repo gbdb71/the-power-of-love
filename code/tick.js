@@ -154,13 +154,15 @@ function tick_game(game) {
 
     if (game.cursor.just_released) {
         var z_factor = game.arrows.z_velocity / (game.arrows.far - game.arrows.near);
+        var x_variance = (Math.pow(Math.random() * 2 - 1, 5)) * 6;
+        var y_variance = (Math.pow(Math.random() * 2 - 1, 5)) * 6;
         game.arrows.list.push({
             state: 'flying',
-            x: game.width * 0.5,
-            y: game.height * 0.5,
+            x: game.width * 0.5 - x_variance,
+            y: game.height * 0.5 - y_variance,
             z: game.arrows.near,
-            dx: (game.cursor.position.x - game.width * 0.5) * z_factor,
-            dy: (game.cursor.position.y - game.height * 0.5 - game.arrows.gravity_compensation) * z_factor,
+            dx: (game.cursor.position.x + x_variance * 10 - game.width * 0.5) * z_factor,
+            dy: (game.cursor.position.y + y_variance * 10 - game.height * 0.5 - game.arrows.gravity_compensation) * z_factor,
             target: game.cursor.selected_people,
             trail: [{x: game.width * 0.5, y: game.height * 0.5, z: game.arrows.near, state: 'tracking'}]
         });
