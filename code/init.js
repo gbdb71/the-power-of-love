@@ -53,8 +53,9 @@ function init_level(game, level) {
     for (i = 0; i < level.peoples.length; ++i) {
         var people = level.peoples[i];
         game.peoples.list.push({
-            state: 'falling',
-            has_target: false,
+            movement_state: 'falling',
+            state: 'wandering',
+            mate: null,
             orientation: people.orientation,
             previous_dx: 0,
             previous_dy: 0,
@@ -62,7 +63,9 @@ function init_level(game, level) {
             dy: 0,
             x: people.x,
             y: people.y,
-            platform: null
+            platform: null,
+            fov_center: people.orientation == 'left' ? Math.PI : Math.PI * 2,
+            fov_center_velocity: 0
         });
     }
 }

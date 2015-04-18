@@ -1,4 +1,5 @@
 var ld32 = {
+    time: 0,
     tick_fps: 60,
     width: 640,
     height: 320,
@@ -21,7 +22,7 @@ var ld32 = {
     background_color: '#f4eeee',
     platforms: {
         height: 20,
-        background_color: '#a40000',
+        background_color: '#a45040',
         list: []
     },
     peoples: {
@@ -33,10 +34,10 @@ var ld32 = {
         walk_velocity: 2,
         falling_friction: {x: 0.01, y: 0.01},
         colors: {
-            fov: 'rgba(0, 0, 0, 0.1)',
-            selected: 'rgba(255, 0, 0, 0.5)',
-            falling: '#0064c8',
-            walking: '#00c864'
+            fov: 'rgba(60, 0, 0, 0.1)',
+            selected: 'rgba(90, 90, 140, 0.5)',
+            falling: '#000',
+            walking: '#000'
         },
         list: []
     },

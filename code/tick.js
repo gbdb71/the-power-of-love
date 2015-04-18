@@ -9,7 +9,7 @@ function tick_game(game) {
         // TODO: correct constant acceleration equation
         // TODO: continuous collision detection
 
-        if (people.state == 'falling') {
+        if (people.movement_state == 'falling') {
             people.dy += game.peoples.gravity / game.tick_fps;
             people.dy *= 1 - game.peoples.falling_friction.y;
             people.dx *= 1 - game.peoples.falling_friction.x;
@@ -20,7 +20,7 @@ function tick_game(game) {
         people.x += people.dx;
         people.y += people.dy;
 
-        switch (people.state) {
+        switch (people.movement_state) {
             case 'falling':
                 var people_top = people.y - game.peoples.radius;
                 var people_bottom = people.y + game.peoples.radius;
@@ -30,7 +30,7 @@ function tick_game(game) {
                         people.dx = (people.orientation == 'left' ? -1 : 1) * game.peoples.walk_velocity;
                         people.dy = 0;
                         people.y = platform.y - game.peoples.radius;
-                        people.state = 'walking';
+                        people.movement_state = 'walking';
                         people.platform = platform;
                         break;
                     }
@@ -44,10 +44,47 @@ function tick_game(game) {
                 break;
         }
 
-        var people_distance = distance(people, game.cursor.position);
-        if (people_distance < nearest_people_distance) {
-            nearest_people_distance = people_distance;
-            nearest_people = people;
+        switch (people.state) {
+            case 'wandering':
+                var people_distance = distance(people, game.cursor.position);
+                if (people_distance < nearest_people_distance) {
+                    nearest_people_distance = people_distance;
+                    nearest_people = people;
+                }
+                break;
+            case 'selecting_mate':
+                var animation = Math.min(unlerp(game.time - people.select_time, 0, 0.5), 1);
+                var target_center = people.orientation == 'left' ? Math.PI : Math.PI * 2;
+                var delta = target_center - people.fov_center;
+                people.fov_center_velocity +=  delta * 0.02;
+                people.fov_center_velocity *= 0.85;
+                people.fov_center += people.fov_center_velocity;
+                var start_angle = people.fov_center + game.peoples.fov_angle * -0.5;
+                var stop_angle = people.fov_center + game.peoples.fov_angle * 0.5;
+                if (start_angle < 0) {
+                    start_angle += Math.PI * 2;
+                    stop_angle += Math.PI * 2;
+                }
+                people.fov_radius = lerp(animation, game.peoples.radius, game.peoples.fov_radius);
+                for (j=0; j<game.peoples.list.length; ++j) {
+                    var other_people = game.peoples.list[j];
+                    if (other_people != people) {
+                        if (distance(people, other_people) < people.fov_radius) {
+                            var angle = Math.atan2(other_people.y - people.y, other_people.x - people.x);
+                            if (angle <= 0)
+                                angle += Math.PI * 2;
+                            if (angle > start_angle && angle < stop_angle) {
+                                people.mate = other_people;
+                                people.mate_time = game.time;
+                                people.state = 'following_mate';
+                                break;
+                            }
+                        }
+                    }
+                }
+                break;
+            case 'following_mate':
+                break;
         }
     }
 
@@ -61,7 +98,7 @@ function tick_game(game) {
                 arrow.x += arrow.dx;
                 arrow.y += arrow.dy;
                 arrow.dy += game.arrows.gravity;
-                if (arrow.target && arrow.z <= game.arrows.far) {
+                if (arrow.target && arrow.target.state == 'wandering' && arrow.z <= game.arrows.far) {
                     var dx = arrow.target.x - arrow.x + arrow.target.dx * game.arrows.prediction_force;
                     var dy = arrow.target.y - arrow.y + arrow.target.dy * game.arrows.prediction_force;
                     arrow.dx += game.arrows.tracking_force * dx;
@@ -70,12 +107,14 @@ function tick_game(game) {
                     arrow.dy *= 1 - game.arrows.xy_friction;
                 }
                 if (arrow.z >= game.arrows.far && arrow.z < game.arrows.far + game.arrows.z_velocity * 2) {
-                    if (arrow.target && distance(arrow, arrow.target) < game.peoples.radius + game.arrows.radius) {
+                    if (arrow.target && arrow.target.state == 'wandering' && distance(arrow, arrow.target) < game.peoples.radius + game.arrows.radius) {
                         arrow.state = 'attached';
                         arrow.z = game.arrows.far;
+                        arrow.target.state = 'selecting_mate';
+                        arrow.target.select_time = game.time;
+                        arrow.attach_time = game.time;
                     }
-                    //else
-                    //    arrow.state = 'stuck';
+                    // TODO: get stuck on platforms
                 }
 
                 if (distance(arrow, arrow.trail[0]) > 5) {
@@ -98,7 +137,6 @@ function tick_game(game) {
                 trail.x += (previous.x - trail.x) * 0.5;
                 trail.y += (previous.y - trail.y) * 0.5;
                 trail.z += (previous.z - trail.z) * 0.5;
-                trail.y += 0.1;
                 if (arrow.state != 'flying' && distance(previous, trail) + (Math.abs(trail.z - previous.z) * 200) < 3)
                     trail.state = 'locked';
             } else {
@@ -108,7 +146,7 @@ function tick_game(game) {
             previous = trail;
         }
 
-        if (arrow.z > game.arrows.far * 4) {
+        if (arrow.z > game.arrows.far * 4 || (arrow.state == 'attached' && game.time - arrow.attach_time > 0.4)) {
             game.arrows.list.splice(i, 1);
             --i;
         }
@@ -130,4 +168,5 @@ function tick_game(game) {
 
     game.cursor.just_pressed = false;
     game.cursor.just_released = false;
+    game.time += 1 / game.tick_fps;
 }
