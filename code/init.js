@@ -44,6 +44,7 @@ function init_game(game, canvas) {
 }
 
 function init_level(game, level) {
+    game.multiplier = 1;
     game.score = 0;
     game.smooth_score = 0;
     game.level_time = game.time;

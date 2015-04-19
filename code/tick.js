@@ -48,10 +48,49 @@ function tick_game(game) {
         people.y += people.dy;
 
         if (people.state != 'dead' && people.y > game.height * 1.2) {
+            if (people.state == 'following_mate') {
+                if (people.mate.state == 'following_mate' && people.mate.mate == people) {
+                    game.messages.list.push({
+                        text: 'Good bye, my love...',
+                        time: game.time,
+                        score: 45,
+                        x: people.x,
+                        y: people.y
+                    });
+                } else {
+                    game.messages.list.push({
+                        text: 'Lack of priorities',
+                        time: game.time,
+                        score: 25,
+                        x: people.x,
+                        y: people.y
+                    });
+                }
+            } else {
+                game.messages.list.push({
+                    text: 'Looked the wrong way',
+                    time: game.time,
+                    score: 10,
+                    x: people.x,
+                    y: people.y
+                });
+            }
+
             people.state = 'dead';
             people.movement_state = 'dead';
-            game.score += 10;
-            game.messages.list.push({text: 'Looked the wrong way', time:game.time, score: 10, x:people.x, y:people.y});
+        }
+        if (people.state == 'following_mate' && !people.triangle_done && people.mate.state == 'following_mate') {
+            if (people.mate.mate != people && people.mate.mate.state == 'following_mate' && people.mate.mate.mate == people) {
+                game.messages.list.push({
+                    text: 'Love triangle', time: game.time, score: 50,
+                    x: (people.x + people.mate.x + people.mate.mate.x) / 3,
+                    y: (people.y + people.mate.y + people.mate.mate.y) / 3
+                });
+                // This is not great :
+                people.triangle_done = true;
+                people.mate.triangle_done = true;
+                people.mate.mate.triangle_done = true;
+            }
         }
         switch (people.movement_state) {
             case 'ascending':
@@ -84,13 +123,13 @@ function tick_game(game) {
                 }
                 break;
             case 'walking':
-                if (people.x < people.platform.x_min || people.x >= people.platform.x_max) {
+                if (people.x + people.dx < people.platform.x_min || people.x + people.dx >= people.platform.x_max) {
                     if (people.state == 'following_mate' && people.mate.y > people.y) {
                         people.movement_state = 'falling';
                         people.platform = null;
                         break;
                     } else {
-                        people.orientation = people.orientation == 'left' ? 'right' : 'left';
+                        people.orientation = people.x + people.dx < people.platform.x_min ? 'right' : 'left';
                         people.dx = (people.orientation == 'left' ? -1 : 1) * (people.state == "following_mate" ? game.peoples.run_velocity : game.peoples.walk_velocity);
                     }
                 }
@@ -158,6 +197,8 @@ function tick_game(game) {
                     stop_angle += Math.PI * 2;
                 }
                 people.fov_radius = lerp(animation, game.peoples.radius, game.peoples.fov_radius);
+                var best_candidate = null;
+                var best_candidate_distance = 1 / 0;
                 for (j = 0; j < game.peoples.list.length; ++j) {
                     var other_people = game.peoples.list[j];
                     if (other_people != people) {
@@ -165,14 +206,17 @@ function tick_game(game) {
                             var angle = Math.atan2(other_people.y - people.y, other_people.x - people.x);
                             if (angle <= 0)
                                 angle += Math.PI * 2;
-                            if (angle > start_angle && angle < stop_angle) {
-                                people.mate = other_people;
-                                people.mate_time = game.time;
-                                people.state = 'following_mate';
-                                break;
+                            if (angle > start_angle && angle < stop_angle && distance(people, other_people) < best_candidate_distance) {
+                                best_candidate = other_people;
+                                best_candidate_distance = distance(people, other_people);
                             }
                         }
                     }
+                }
+                if (best_candidate != null) {
+                    people.mate = best_candidate;
+                    people.mate_time = game.time;
+                    people.state = 'following_mate';
                 }
                 break;
             case 'following_mate':
@@ -187,8 +231,25 @@ function tick_game(game) {
                         people.mate.ascention_time = game.time;
                         people.movement_state = 'ascending';
                         people.mate.movement_state = 'ascending';
-                        game.score -= 100;
-                        game.messages.list.push({text: 'Lucky guys...', time:game.time, score: -100, x:0.5*(people.x + people.mate.x), y:0.5*(people.y + people.mate.y)});
+                        game.messages.list.push({
+                            text: 'Lucky guys...',
+                            time: game.time,
+                            score: -50,
+                            x: 0.5 * (people.x + people.mate.x),
+                            y: 0.5 * (people.y + people.mate.y)
+                        });
+                        for (j = 0; j < game.peoples.list.length; ++j) {
+                            other_people = game.peoples.list[j];
+                            if (other_people != people && other_people != people.mate && other_people.state == 'following_mate' && (other_people.mate == people || other_people.mate == people.mate)) {
+                                game.messages.list.push({
+                                    text: 'The third wheel',
+                                    time: game.time,
+                                    score: 65,
+                                    x: other_people.x,
+                                    y: other_people.y
+                                });
+                            }
+                        }
                     }
                 }
                 break;
@@ -273,6 +334,20 @@ function tick_game(game) {
             target: game.cursor.selected_people,
             trail: [{x: game.width * 0.5, y: game.height * 0.5, z: game.arrows.near, state: 'tracking'}]
         });
+    }
+
+    for (i = 0; i < game.messages.list.length; ++i) {
+        var message = game.messages.list[i];
+        if (!message.acknowledged) {
+            if (message.score < 0) {
+                game.multiplier = 1;
+                game.score += message.score;
+            } else {
+                game.score += message.score * game.multiplier;
+                game.multiplier += 1;
+            }
+            message.acknowledged = true;
+        }
     }
 
     var everybody_is_gone = true;
