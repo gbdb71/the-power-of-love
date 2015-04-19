@@ -7,6 +7,7 @@ ld32.levels.push({
     peoples: [
         {x: 150, y: -20, orientation: 'right'},
         {x: 250, y: -20, orientation: 'right'},
-        {x: 450, y: -20, orientation: 'left'}
+        {x: 420, y: -20, orientation: 'left'},
+        {x: 470, y: -20, orientation: 'left'}
     ]
 });

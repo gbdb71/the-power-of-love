@@ -18,8 +18,11 @@ var ld32 = {
         }
     },
     state: 'playing',
+    score: 0,
+    smooth_score: 0,
     current_level: 0,
     levels: [],
+    font: "Bonbon",
     background_color: 'rgba(244 ,238, 238,',
     platforms: {
         height: 20,
@@ -59,5 +62,8 @@ var ld32 = {
         near: 0.01,
         far: 1,
         list: []
+    },
+    messages: {
+        list: []
     }
 };

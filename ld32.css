@@ -1,3 +1,14 @@
+@font-face {
+    font-family: 'Bonbon';
+    src: url('fonts/bonbon-regular-webfont.eot');
+    src: url('fonts/bonbon-regular-webfont.eot?#iefix') format('embedded-opentype'),
+    url('fonts/bonbon-regular-webfont.woff2') format('woff2'),
+    url('fonts/bonbon-regular-webfont.woff') format('woff'),
+    url('fonts/bonbon-regular-webfont.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+
+}
 body {
     background-color: #446;
     color: #f4eeee;
@@ -12,6 +23,11 @@ h1 {
 #ld32 {
     display: block;
     margin: auto;
+    position: relative;
+    user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -webkit-user-select: none;
 }
 
 #ld32.loaded {

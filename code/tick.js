@@ -25,10 +25,13 @@ function tick_game(game) {
         people.fov_center_velocity += delta * 0.02;
         people.fov_center_velocity *= 0.85;
         people.fov_center += people.fov_center_velocity;
-        if (people.fov_center < 0)
-            people.fov_center += 2 * Math.PI;
-        else if (people.fov_center >= 2 * Math.PI)
-            people.fov_center -= 2 * Math.PI;
+        if (people.fov_center < 0) {
+            people.fov_center += Math.PI * 2;
+            people.target_fov_center += Math.PI * 2;
+        } else if (people.fov_center >= Math.PI * 2) {
+            people.fov_center -= Math.PI * 2;
+            people.target_fov_center -= Math.PI * 2;
+        }
 
         // TODO: correct constant acceleration equation
         // TODO: continuous collision detection
@@ -44,9 +47,11 @@ function tick_game(game) {
         people.x += people.dx;
         people.y += people.dy;
 
-        if (people.y > game.height * 2) {
+        if (people.state != 'dead' && people.y > game.height * 1.2) {
             people.state = 'dead';
             people.movement_state = 'dead';
+            game.score += 10;
+            game.messages.list.push({text: 'Looked the wrong way', time:game.time, score: 10, x:people.x, y:people.y});
         }
         switch (people.movement_state) {
             case 'ascending':
@@ -182,6 +187,8 @@ function tick_game(game) {
                         people.mate.ascention_time = game.time;
                         people.movement_state = 'ascending';
                         people.mate.movement_state = 'ascending';
+                        game.score -= 100;
+                        game.messages.list.push({text: 'Lucky guys...', time:game.time, score: -100, x:0.5*(people.x + people.mate.x), y:0.5*(people.y + people.mate.y)});
                     }
                 }
                 break;
@@ -281,6 +288,10 @@ function tick_game(game) {
         init_level(game, game.levels[game.current_level]);
     }
 
+    if (game.smooth_score < game.score)
+        game.smooth_score += 1;
+    else if (game.smooth_score > game.score)
+        game.smooth_score -= 1;
     game.cursor.just_pressed = false;
     game.cursor.just_released = false;
     game.time += 1 / game.tick_fps;
