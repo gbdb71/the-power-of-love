@@ -359,15 +359,15 @@ function tick_game(game) {
                 arrow.x += arrow.dx;
                 arrow.y += arrow.dy;
                 arrow.dy += game.arrows.gravity;
+                if (arrow.target && arrow.target.state == 'wandering' && arrow.z <= game.arrows.far) {
+                    var dx = arrow.target.x - arrow.x + arrow.target.dx * game.arrows.prediction_force;
+                    var dy = arrow.target.y - arrow.y + arrow.target.dy * game.arrows.prediction_force;
+                    arrow.dx += game.arrows.tracking_force * dx * arrow.z;
+                    arrow.dy += game.arrows.tracking_force * dy * arrow.z;
+                    arrow.dx *= 1 - game.arrows.xy_friction;
+                    arrow.dy *= 1 - game.arrows.xy_friction;
+                }
                 if (game.state == 'playing') {
-                    if (arrow.target && arrow.target.state == 'wandering' && arrow.z <= game.arrows.far) {
-                        var dx = arrow.target.x - arrow.x + arrow.target.dx * game.arrows.prediction_force;
-                        var dy = arrow.target.y - arrow.y + arrow.target.dy * game.arrows.prediction_force;
-                        arrow.dx += game.arrows.tracking_force * dx;
-                        arrow.dy += game.arrows.tracking_force * dy;
-                        arrow.dx *= 1 - game.arrows.xy_friction;
-                        arrow.dy *= 1 - game.arrows.xy_friction;
-                    }
                     if (arrow.z >= game.arrows.far && arrow.z < game.arrows.far + game.arrows.z_velocity * 2) {
                         if (arrow.target && arrow.target.state == 'wandering' && distance(arrow, arrow.target) < game.peoples.radius + game.arrows.radius) {
                             arrow.state = 'attached';
@@ -435,14 +435,37 @@ function tick_game(game) {
         var z_factor = game.arrows.z_velocity / (game.arrows.far - game.arrows.near);
         var x_variance = (Math.pow(Math.random() * 2 - 1, 5)) * 6;
         var y_variance = (Math.pow(Math.random() * 2 - 1, 5)) * 6;
+        var target = game.cursor.selected_people;
+        if (game.state == 'score') {
+            var button1 = {
+                x: game.width * 0.33,
+                y: game.height * 0.6 - game.retry_hover * 10,
+                dx: 0,
+                dy: 0,
+                state: 'wandering'
+            };
+            var button2 = {
+                x: game.width * 0.66,
+                y: game.height * 0.6 - game.next_hover * 10,
+                dx: 0,
+                dy: 0,
+                state: 'wandering'
+            };
+            if (distance(game.cursor.position, button1) < 50)
+                target = button1;
+            else if (distance(game.cursor.position, button2) < 50)
+                target = button2;
+            else
+                target = null;
+        }
         game.arrows.list.push({
             state: 'flying',
-            x: game.width * 0.5 - x_variance,
-            y: game.height * 0.5 - y_variance,
+            x: game.width * 0.5,
+            y: game.height * 0.54,
             z: game.arrows.near,
             dx: (game.cursor.position.x + x_variance * 10 - game.width * 0.5) * z_factor,
-            dy: (game.cursor.position.y + y_variance * 10 - game.height * 0.5 - game.arrows.gravity_compensation) * z_factor,
-            target: game.cursor.selected_people,
+            dy: (game.cursor.position.y + y_variance * 10 - game.height * 0.54 - game.arrows.gravity_compensation) * z_factor,
+            target: target,
             time: game.time,
             trail: [{x: game.width * 0.5, y: game.height * 0.5, z: game.arrows.near, state: 'tracking'}]
         });

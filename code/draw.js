@@ -225,7 +225,7 @@ function draw_arrows(game, context, layer) {
             opacity = lerp(animation, 1, 0);
         }
         if (layer == 'front')
-            context.fillStyle = 'rgba(0, 0, 0, ' + opacity * Math.min(Math.max(0, unlerp(arrow.z, game.arrows.near, game.arrows.far) - 0.02) * 1.2, 1) + ')';
+            context.fillStyle = 'rgba(0, 0, 0, ' + opacity * Math.min(Math.max(0, unlerp(arrow.z, game.arrows.near, game.arrows.far) + 0.2) * 1.2, 1) + ')';
         else
             context.fillStyle = 'rgba(0, 0, 0, ' + opacity * unlerp(arrow.z, game.arrows.far * 4, game.arrows.far) + ')';
         context.beginPath();
