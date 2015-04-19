@@ -135,7 +135,7 @@ function draw_arrows(game, context, layer) {
 
 
     context.font = "30px " + game.font;
-    context.fillStyle = '#000';
+    context.fillStyle = 'rgba(0, 0, 0,' + Math.max(Math.min(game.time - 1, 1), 0) + ')';
     context.textAlign = 'left';
     context.fillText("Score: " + Math.round(game.smooth_score), 20, 34);
 
@@ -158,7 +158,7 @@ function draw_arrows(game, context, layer) {
         }
         var increment = 30;
         var color1, color2;
-        if (game.time - message.time < 2) {
+        if (game.time - message.time < 3) {
             var fade_in = Math.min(unlerp(game.time - message.time, 0, 0.5), 1);
             context.font = (40 * fade_in) + "px " + game.font;
             context.fillStyle = 'rgba(220, 120, 120, ' + (fade_in - Math.max(fade_in - 0.666, 0) * 3) + ')';
@@ -167,7 +167,7 @@ function draw_arrows(game, context, layer) {
             color1 = 'rgba(255, 255, 255,' + fade_in + ')';
             color2 = (message.score < 0 ? 'rgba(200, 20, 20,' : 'rgba(233, 119, 141,') + fade_in + ')';
         } else {
-            var fade_out = Math.min(unlerp(game.time - (message.time + 2), 0, 0.5), 1);
+            var fade_out = Math.min(unlerp(game.time - (message.time + 3), 0, 0.5), 1);
             if (fade_out == 1) {
                 game.messages.list.splice(i, 1);
                 --i;

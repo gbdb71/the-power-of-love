@@ -76,6 +76,36 @@ function tick_game(game) {
                 });
             }
 
+            for (j = 0; j < game.peoples.list.length; ++j) {
+                other_people = game.peoples.list[j];
+                if (other_people != people && other_people.state == 'following_mate' && other_people.mate == people) {
+                    for (var k = 0; k < game.peoples.list.length; ++k) {
+                        var other_other_people = game.peoples.list[k];
+                        if (other_other_people != other_people && other_other_people != people && other_other_people.state == 'following_mate' && other_other_people.mate == other_people) {
+                            game.messages.list.push({
+                                text: 'Schadenfreude',
+                                time: game.time,
+                                score: 75,
+                                x: people.x,
+                                y: people.y
+                            });
+                            for (var l = 0; l < game.peoples.list.length; ++l) {
+                                var other_other_other_people = game.peoples.list[l];
+                                if (other_other_other_people != other_other_people && other_other_other_people != other_people && other_other_other_people != people && other_other_other_people.state == 'following_mate' && other_other_other_people.mate == other_other_people) {
+                                    game.messages.list.push({
+                                        text: 'The enemy of my enemy',
+                                        time: game.time,
+                                        score: 35,
+                                        x: people.x,
+                                        y: people.y
+                                    });
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
             people.state = 'dead';
             people.movement_state = 'dead';
         }
@@ -341,7 +371,7 @@ function tick_game(game) {
         if (!message.acknowledged) {
             if (message.score < 0) {
                 game.multiplier = 1;
-                game.score += message.score;
+                game.score = Math.max(0, game.score + message.score);
             } else {
                 game.score += message.score * game.multiplier;
                 game.multiplier += 1;
@@ -350,17 +380,30 @@ function tick_game(game) {
         }
     }
 
-    var everybody_is_gone = true;
+    var peoples_left = 0;
     for (i = 0; i < game.peoples.list.length; ++i) {
         people = game.peoples.list[i];
         if (people.state != 'dead' && people.state != 'ascended') {
-            everybody_is_gone = false;
-            break;
+            peoples_left += 1;
         }
     }
-    if (everybody_is_gone == true) {
+    if (peoples_left == 0) {
         game.current_level = (game.current_level + 1) % game.levels.length;
         init_level(game, game.levels[game.current_level]);
+    } else if (peoples_left == 1) {
+        for (i = 0; i < game.peoples.list.length; ++i) {
+            people = game.peoples.list[i];
+            if (!people.forever_alone && people.state != 'dead' && people.state != 'ascended' && people.movement_state != 'falling') {
+                game.messages.list.push({
+                    text: 'Forever alone...',
+                    time: game.time,
+                    score: 15,
+                    x: people.x,
+                    y: people.y
+                });
+                people.forever_alone = true;
+            }
+        }
     }
 
     if (game.smooth_score < game.score)
