@@ -97,8 +97,12 @@ function draw_game(game, context) {
         context.font = "30px " + game.font;
         context.fillStyle = '#f7bd13';
         context.textAlign = 'right';
-        context.fillText("x" + game.multiplier, game.width - 20, 34);
+        context.fillText("Bonus: x" + game.multiplier, game.width - 20, 34);
     }
+
+    var timeout_ratio = Math.max(0, (game.time - game.timeout_start_time - game.timeout_length * 0.5) / (game.timeout_length * 0.5));
+    context.fillStyle = 'rgba(80, 40, 200, ' + (0.6 * timeout_ratio) + ' )';
+    context.fillRect(game.width * 0.2, 50, game.width * 0.6 * timeout_ratio, 14);
 
     context.textAlign = 'center';
     context.textBaseline = 'middle';

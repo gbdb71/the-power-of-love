@@ -48,6 +48,9 @@ function init_level(game, level) {
     game.multiplier = 1;
     game.score = 0;
     game.smooth_score = 0;
+    game.retry_hover = 0;
+    game.next_hover = 0;
+    game.timeout_start_time = game.time;
     game.level_time = game.time;
     game.platforms.list = [];
     for (var i = 0; i < level.platforms.length; ++i) {

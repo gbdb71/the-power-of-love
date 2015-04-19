@@ -23,6 +23,7 @@ var ld32 = {
     current_level: 0,
     retry_hover: 0,
     next_hover: 0,
+    timeout_length: 10,
     levels: [],
     font: "Bonbon",
     background_color: 'rgba(244 ,238, 238,',

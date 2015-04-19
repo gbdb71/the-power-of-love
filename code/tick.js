@@ -63,7 +63,7 @@ function tick_game(game) {
                 if (people.state == 'following_mate') {
                     if (people.mate.state == 'following_mate' && people.mate.mate == people) {
                         game.messages.list.push({
-                            text: 'Good bye, my love...',
+                            text: 'Good bye, my love',
                             time: game.time,
                             score: 45,
                             x: people.x,
@@ -274,7 +274,7 @@ function tick_game(game) {
                             people.movement_state = 'ascending';
                             people.mate.movement_state = 'ascending';
                             game.messages.list.push({
-                                text: 'Lucky guys...',
+                                text: 'Lucky guys',
                                 time: game.time,
                                 score: -50,
                                 x: 0.5 * (people.x + people.mate.x),
@@ -310,15 +310,19 @@ function tick_game(game) {
                     game.score += message.score * game.multiplier;
                     game.multiplier += 1;
                 }
+                game.timeout_start_time = game.time;
                 message.acknowledged = true;
             }
         }
 
         var peoples_left = 0;
+        var interactive_peoples_left = 0;
         for (i = 0; i < game.peoples.list.length; ++i) {
             people = game.peoples.list[i];
             if (people.state != 'dead' && people.state != 'ascended') {
                 peoples_left += 1;
+                if (people.state == 'wandering')
+                    interactive_peoples_left += 1;
             }
         }
         if (peoples_left == 0) {
@@ -329,7 +333,7 @@ function tick_game(game) {
                 people = game.peoples.list[i];
                 if (!people.forever_alone && people.state != 'dead' && people.state != 'ascended' && people.movement_state != 'falling') {
                     game.messages.list.push({
-                        text: 'Forever alone...',
+                        text: 'Forever alone',
                         time: game.time,
                         score: 15,
                         x: people.x,
@@ -338,6 +342,12 @@ function tick_game(game) {
                     people.forever_alone = true;
                 }
             }
+        }
+        if (interactive_peoples_left != 0)
+            game.timeout_start_time = game.time;
+        if (game.time - game.timeout_start_time > game.timeout_length) {
+            game.state = 'score';
+            game.score_time = game.time;
         }
     }
 
@@ -374,12 +384,12 @@ function tick_game(game) {
                         if (distance(arrow, {
                                 x: game.width * 0.33,
                                 y: game.height * 0.6 - game.retry_hover * 10
-                            }) < 60) {
+                            }) < 50) {
                             init_level(game, game.levels[game.current_level]);
                         } else if (game.score > 0 && distance(arrow, {
                                 x: game.width * 0.66,
                                 y: game.height * 0.6 - game.next_hover * 10
-                            }) < 60) {
+                            }) < 50) {
                             game.current_level = (game.current_level + 1) % game.levels.length;
                             init_level(game, game.levels[game.current_level]);
                         }
