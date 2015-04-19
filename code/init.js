@@ -57,11 +57,34 @@ function init_level(game, level) {
     game.platforms.list = [];
     for (var i = 0; i < level.platforms.length; ++i) {
         var platform = level.platforms[i];
+        var points_count = Math.max(3, Math.floor((platform.x_max - platform.x_min) / 40));
+        var points = [];
+        var points_2 = [];
+        var points_3 = [];
+        for (var j=0; j<points_count - 1; ++j) {
+            points.push({
+                x: platform.x_min + (platform.x_max - platform.x_min) / (points_count - 1) * (j + 0.5) + (Math.random() - 0.5) * 10,
+                y: platform.y + (Math.random() * 0.5 + 0.5) * game.platforms.height});
+        }
+        for (j=0; j<points_count; ++j) {
+            points_2.push({
+                x: platform.x_min + (platform.x_max - platform.x_min) / (points_count) * (j + 0.5)+ (Math.random() - 0.5) * 10,
+                y: platform.y + (Math.random() * 0.3 + 0.7) * game.platforms.height * 2});
+        }
+
+        for (j=0; j<points_count; ++j) {
+            points_3.push({
+                x: platform.x_min + (platform.x_max - platform.x_min) / (points_count) * (j + 0.5)+ (Math.random() - 0.5) * 10,
+                y: platform.y - (Math.random() * 0.7 + 0.3) * game.platforms.height * 0.5});
+        }
         game.platforms.list.push({
             y: platform.y,
             x_min: platform.x_min,
             x_max: platform.x_max,
-            jumpers: platform.jumpers.slice(0)
+            jumpers: platform.jumpers.slice(0),
+            points: points,
+            points_2: points_2,
+            points_3: points_3
         });
     }
     game.peoples.list = [];

@@ -69,12 +69,80 @@ function draw_game(game, context) {
     if (game.state != 'score')
         draw_arrows(game, context, 'back');
 
-    context.fillStyle = game.platforms.background_color + Math.min((game.time - game.level_time) * 6, 1) + ')';
+    var fader = Math.min((game.time - game.level_time) * 6, 1);
+
     for (i = 0; i < game.platforms.list.length; ++i) {
         var platform = game.platforms.list[i];
-        context.fillRect(platform.x_min, platform.y, platform.x_max - platform.x_min, game.platforms.height);
-        for (j = 0; j < platform.jumpers.length; ++j)
-            context.fillRect(platform.jumpers[j] - game.platforms.jumper_width * 0.5, platform.y - game.platforms.jumper_height, game.platforms.jumper_width, game.platforms.jumper_height);
+
+        gradient = context.createLinearGradient(0, platform.y, 0, platform.y + 300);
+        gradient.addColorStop(0, 'rgba(20, 0, 40, ' + 0.1 * fader + ')');
+        gradient.addColorStop(1, 'rgba(20, 0, 40, 0.0)');
+
+        context.fillStyle = gradient;
+        context.beginPath();
+        context.moveTo(platform.x_min, platform.y);
+        context.lineTo(platform.x_min - 200, platform.y + 400);
+        context.lineTo(platform.x_max - 200, platform.y + 400);
+        context.lineTo(platform.x_max, platform.y);
+        context.fill();
+    }
+
+    for (i = 0; i < game.platforms.list.length; ++i) {
+        platform = game.platforms.list[i];
+
+        context.fillStyle = 'rgba(135, 75, 63,' + 1.0 + ')';
+        context.beginPath();
+        context.moveTo(platform.x_min, platform.y);
+        for (j = 0; j < platform.points_2.length; ++j) {
+            var point = platform.points_2[j];
+            context.lineTo(point.x, point.y);
+        }
+        context.lineTo(platform.x_max, platform.y);
+        context.fill();
+
+        context.fillStyle = 'rgba(164, 80, 64,' + 1.0 + ')';
+        context.beginPath();
+        context.moveTo(platform.x_min, platform.y);
+        for (j = 0; j < platform.points.length; ++j) {
+            point = platform.points[j];
+            var point_2 = platform.points_2[j];
+            context.lineTo(point_2.x, point_2.y);
+            context.lineTo(point.x, point.y);
+        }
+        context.lineTo(platform.points_2[j].x, platform.points_2[j].y);
+        context.lineTo(platform.x_max, platform.y);
+        context.fill();
+
+        context.fillStyle = 'rgba(174, 110, 54,' + 1.0 + ')';
+        context.beginPath();
+        context.moveTo(platform.x_min, platform.y);
+        for (j = 0; j < platform.points.length; ++j) {
+            point = platform.points[j];
+            context.lineTo(point.x, point.y);
+        }
+        context.lineTo(platform.x_max, platform.y);
+        for (j = 0; j < platform.points_3.length; ++j) {
+            point = platform.points_3[platform.points_3.length - j - 1];
+            context.lineTo(point.x, point.y);
+        }
+        context.fill();
+
+
+        context.fillStyle = '#e44';
+        for (j = 0; j < platform.jumpers.length; ++j) {
+            var start = platform.jumpers[j] - game.platforms.jumper_width * 0.7;
+            var end = platform.jumpers[j] + game.platforms.jumper_width * 0.7;
+            context.beginPath();
+            context.moveTo(start, platform.y + 4);
+            context.lineTo(start + (end - start) / 3, platform.y + 8);
+            context.lineTo(start + (end - start) / 3 * 2, platform.y + 8);
+            context.lineTo(end, platform.y + 4);
+            context.lineTo(end, platform.y);
+            context.lineTo(start + (end - start) / 3 * 2, platform.y - 2);
+            context.lineTo(start + (end - start) / 3, platform.y - 2);
+            context.lineTo(start, platform.y);
+            context.fill();
+        }
     }
 
     for (i = 0; i < game.peoples.list.length; ++i) {
@@ -101,7 +169,7 @@ function draw_game(game, context) {
 
     if (game.multiplier > 1) {
         context.font = "30px " + game.font;
-        context.fillStyle = '#f7bd13';
+        context.fillStyle = '#000';
         context.textAlign = 'right';
         context.fillText("Bonus: x" + game.multiplier, game.width - 20, 34);
     }

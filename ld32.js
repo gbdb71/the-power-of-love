@@ -29,7 +29,7 @@ var ld32 = {
     background_color: 'rgba(244 ,238, 238,',
     platforms: {
         height: 20,
-        jumper_width: 20,
+        jumper_width: 24,
         jumper_height: 2,
         background_color: 'rgba(174, 110, 54,',
         list: []
@@ -46,7 +46,7 @@ var ld32 = {
         falling_friction: {x: 0.01, y: 0.01},
         colors: {
             fov: 'rgba(60, 0, 40, 0.1)',
-            selected: 'rgba(90, 90, 140, 0.5)',
+            selected: 'rgba(220, 140, 180, 0.6)',
             wandering: '#000',
             selecting_mate: '#773355',
             following_mate: '#dd5588',

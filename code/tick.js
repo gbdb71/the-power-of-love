@@ -469,7 +469,7 @@ function tick_game(game) {
             dy: (game.cursor.position.y + y_variance * 10 - game.height * 0.54 - game.arrows.gravity_compensation) * z_factor,
             target: target,
             time: game.time,
-            trail: [{x: game.width * 0.5, y: game.height * 0.5, z: game.arrows.near, state: 'tracking'}]
+            trail: [{x: game.width * 0.5, y: game.height * 0.55, z: game.arrows.near, state: 'tracking'}]
         });
     }
 
