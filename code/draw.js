@@ -164,21 +164,21 @@ function draw_game(game, context) {
         draw_arrows(game, context, 'back');
 
         context.font = "60px " + game.font;
-        context.fillStyle = 'rgba(233, 119, 141,' + fade_in + ')';
+        context.fillStyle = 'rgba(0, 0, 0,' + fade_in + ')';
         context.textAlign = 'center';
         context.fillText("Score: " + game.score, game.width * 0.5, game.height * 0.3);
 
-        context.fillStyle = 'rgba(200, 0, 0, ' + (0.85 * fade_in) + ')';
+        context.fillStyle = 'rgba(100, 50, 75, ' + (0.85 * fade_in) + ')';
         context.beginPath();
         context.arc(game.width * 0.33, game.height * 0.60 - game.retry_hover * 10, 40, 0, 2 * Math.PI);
         context.fill();
 
-        context.fillStyle = 'rgba(200, 0, 0, ' + (0.85 * fade_in * game.retry_hover) + ')';
+        context.fillStyle = 'rgba(100, 50, 75, ' + (0.85 * fade_in * game.retry_hover) + ')';
         context.textAlign = 'center';
         context.font = "26px " + game.font;
         context.fillText("Retry", game.width * 0.33, game.height * 0.60 + game.retry_hover * 10 + 44);
 
-        context.fillStyle = 'rgba(30, 10, 190, ' + ((game.score > 0 ? 0.85 : 0.15) * fade_in) + ')';
+        context.fillStyle = 'rgba(221, 85, 136, ' + ((game.score > 0 ? 0.85 : 0.05) * fade_in) + ')';
         context.beginPath();
         var x = game.width * 0.66;
         var y = game.height * 0.60 - game.next_hover * 10;
@@ -188,7 +188,7 @@ function draw_game(game, context) {
         context.fill();
 
         if (game.score > 0) {
-            context.fillStyle = 'rgba(30, 10, 190, ' + (0.85 * fade_in * game.next_hover) + ')';
+            context.fillStyle = 'rgba(221, 85, 136, ' + (0.85 * fade_in * game.next_hover) + ')';
             context.textAlign = 'center';
             context.font = "26px " + game.font;
             context.fillText("Next", game.width * 0.66, game.height * 0.60 + game.next_hover * 10 + 44);
@@ -204,18 +204,51 @@ function draw_game(game, context) {
 
 function draw_arrows(game, context, layer) {
 
-    function draw_arrow_part(radius, position) {
+    function draw_arrow_head(arrow) {
+
+        context.fillStyle = 'rgba(221, 85, 136,' + Math.min(Math.max(0, unlerp(arrow.z, game.arrows.near, game.arrows.far) + 0.2) * 1.2, 1) + ')';
+        context.beginPath();
+        var x = arrow.x;
+        var y = arrow.y;
+        var z = arrow.z;
+        var radius = 1.5 * game.arrows.radius;
+        for (var i = 0; i < 1; i += 0.1) {
+            draw_arrow_part(radius, {x: x, y: y, z: z});
+            x += arrow.dx * 0.1;
+            y += arrow.dy * 0.1;
+            z += game.arrows.z_velocity * 0.1;
+            radius -= 0.15;
+        }
+        context.fill();
+    }
+
+    function draw_arrow_part(radius, position, with_fins) {
+        var rotation = arrow.z * 2 + game.time;
         if (layer == 'back' ^ position.z < game.arrows.far) {
             var z_factor = 1 / unlerp(position.z, game.arrows.near, game.arrows.far);
             var x = (position.x - game.width * 0.5) * z_factor + game.width * 0.5;
             var y = (position.y - game.height * 0.5) * z_factor + game.height * 0.5;
             context.moveTo(x, y);
             context.arc(x, y, radius * z_factor, 0, 2 * Math.PI);
+            if (with_fins) {
+                context.moveTo(x + Math.cos(rotation + -0.05) * radius * z_factor, y + Math.sin(rotation + -0.05) * radius * z_factor);
+                context.lineTo(x + Math.cos(rotation + 0) * radius * z_factor * 2.5, y + Math.sin(rotation + 0) * radius * z_factor * 2.5);
+                context.lineTo(x + Math.cos(rotation + 0.05) * radius * z_factor, y + Math.sin(rotation + 0.05) * radius * z_factor);
+                context.moveTo(x + Math.cos(rotation + -0.05 + Math.PI * 2 / 3) * radius * z_factor, y + Math.sin(rotation + -0.05 + Math.PI * 2 / 3) * radius * z_factor);
+                context.lineTo(x + Math.cos(rotation + Math.PI * 2 / 3) * radius * z_factor * 2.5, y + Math.sin(rotation + Math.PI * 2 / 3) * radius * z_factor * 2.5);
+                context.lineTo(x + Math.cos(rotation + 0.05 + Math.PI * 2 / 3) * radius * z_factor, y + Math.sin(rotation + 0.05 + Math.PI * 2 / 3) * radius * z_factor);
+                context.moveTo(x + Math.cos(rotation + -0.05 + Math.PI * 4 / 3) * radius * z_factor, y + Math.sin(rotation + -0.05 + Math.PI * 4 / 3) * radius * z_factor);
+                context.lineTo(x + Math.cos(rotation + Math.PI * 4 / 3) * radius * z_factor * 2.5, y + Math.sin(rotation + Math.PI * 4 / 3) * radius * z_factor * 2.5);
+                context.lineTo(x + Math.cos(rotation + 0.05 + Math.PI * 4 / 3) * radius * z_factor, y + Math.sin(rotation + 0.05 + Math.PI * 4 / 3) * radius * z_factor);
+            }
         }
     }
 
     for (i = 0; i < game.arrows.list.length; ++i) {
         var arrow = game.arrows.list[i];
+
+        if (arrow.state == 'flying')
+            draw_arrow_head(arrow);
 
         var opacity = 1;
         var radius = game.arrows.radius;
@@ -225,9 +258,9 @@ function draw_arrows(game, context, layer) {
             opacity = lerp(animation, 1, 0);
         }
         if (layer == 'front')
-            context.fillStyle = 'rgba(0, 0, 0, ' + opacity * Math.min(Math.max(0, unlerp(arrow.z, game.arrows.near, game.arrows.far) + 0.2) * 1.2, 1) + ')';
+            context.fillStyle = 'rgba(100, 50, 75, ' + opacity * Math.min(Math.max(0, unlerp(arrow.z, game.arrows.near, game.arrows.far) + 0.2) * 1.2, 1) + ')';
         else
-            context.fillStyle = 'rgba(0, 0, 0, ' + opacity * unlerp(arrow.z, game.arrows.far * 4, game.arrows.far) + ')';
+            context.fillStyle = 'rgba(100, 50, 75, ' + opacity * unlerp(arrow.z, game.arrows.far * 4, game.arrows.far) + ')';
         context.beginPath();
         var previous = arrow;
         for (var j = 0; j < arrow.trail.length; ++j) {
@@ -237,10 +270,11 @@ function draw_arrows(game, context, layer) {
                     x: lerp(k, trail.x, previous.x),
                     y: lerp(k, trail.y, previous.y),
                     z: lerp(k, trail.z, previous.z)
-                });
+                }, j == arrow.trail.length - 1);
             previous = trail;
         }
         draw_arrow_part(radius, arrow);
         context.fill();
+
     }
 }

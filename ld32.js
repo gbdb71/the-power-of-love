@@ -45,7 +45,7 @@ var ld32 = {
         run_velocity: 2,
         falling_friction: {x: 0.01, y: 0.01},
         colors: {
-            fov: 'rgba(60, 0, 0, 0.1)',
+            fov: 'rgba(60, 0, 40, 0.1)',
             selected: 'rgba(90, 90, 140, 0.5)',
             wandering: '#000',
             selecting_mate: '#773355',
@@ -55,7 +55,7 @@ var ld32 = {
         list: []
     },
     arrows: {
-        radius: 2,
+        radius: 1.5,
         tracking_force: 0.07,
         prediction_force: 4,
         xy_friction: 0.15,
