@@ -44,6 +44,7 @@ function init_game(game, canvas) {
 }
 
 function init_level(game, level) {
+    game.state = 'playing';
     game.multiplier = 1;
     game.score = 0;
     game.smooth_score = 0;
@@ -77,4 +78,5 @@ function init_level(game, level) {
             fov_center_velocity: 0
         });
     }
+    game.arrows.list = [];
 }

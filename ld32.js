@@ -21,6 +21,8 @@ var ld32 = {
     score: 0,
     smooth_score: 0,
     current_level: 0,
+    retry_hover: 0,
+    next_hover: 0,
     levels: [],
     font: "Bonbon",
     background_color: 'rgba(244 ,238, 238,',

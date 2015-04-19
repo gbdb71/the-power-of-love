@@ -60,7 +60,8 @@ function draw_game(game, context) {
         context.fill();
     }
 
-    draw_arrows(game, context, 'back');
+    if (game.state != 'score')
+        draw_arrows(game, context, 'back');
 
     context.fillStyle = game.platforms.background_color + Math.min((game.time - game.level_time) * 6, 1) + ')';
     for (i = 0; i < game.platforms.list.length; ++i) {
@@ -84,7 +85,113 @@ function draw_game(game, context) {
         context.fill();
     }
 
-    draw_arrows(game, context, 'front');
+    if (game.state != 'score')
+        draw_arrows(game, context, 'front');
+
+    context.font = "30px " + game.font;
+    context.fillStyle = 'rgba(0, 0, 0,' + Math.max(Math.min(game.time - 1, 1), 0) + ')';
+    context.textAlign = 'left';
+    context.fillText("Score: " + Math.round(game.smooth_score), 20, 34);
+
+    if (game.multiplier > 1) {
+        context.font = "30px " + game.font;
+        context.fillStyle = '#f7bd13';
+        context.textAlign = 'right';
+        context.fillText("x" + game.multiplier, game.width - 20, 34);
+    }
+
+    context.textAlign = 'center';
+    context.textBaseline = 'middle';
+    var text_position = 60;
+    for (i = 0; i < game.messages.list.length; ++i) {
+        message = game.messages.list[i];
+        var target_x = game.width * 0.5;
+        var target_y = text_position;
+        if (message.dx == undefined) {
+            message.dx = 0;
+            message.dy = 0;
+            message.initial_x = message.x;
+            message.initial_y = message.y;
+        }
+        var increment = 30;
+        var color1, color2;
+        if (game.time - message.time < 3) {
+            var fade_in = Math.min(unlerp(game.time - message.time, 0, 0.5), 1);
+            context.font = (40 * fade_in) + "px " + game.font;
+            context.fillStyle = 'rgba(220, 120, 120, ' + (fade_in - Math.max(fade_in - 0.666, 0) * 3) + ')';
+            context.fillText((message.score > 0 ? '+' : '') + message.score, message.initial_x, message.initial_y - 50 * fade_in);
+            context.font = lerp(fade_in, 70, 30) + "px " + game.font;
+            color1 = 'rgba(255, 255, 255,' + fade_in + ')';
+            color2 = (message.score < 0 ? 'rgba(200, 20, 20,' : 'rgba(233, 119, 141,') + fade_in + ')';
+        } else {
+            var fade_out = Math.min(unlerp(game.time - (message.time + 3), 0, 0.5), 1);
+            if (fade_out == 1) {
+                game.messages.list.splice(i, 1);
+                --i;
+                continue;
+            }
+            context.font = lerp(fade_out, 30, 0) + "px " + game.font;
+            color1 = 'rgba(255, 255, 255,' + fade_out + ')';
+            color2 = (message.score < 0 ? 'rgba(200, 20, 20,' : 'rgba(233, 119, 141,') + (1 - fade_out) + ')';
+            increment = lerp(fade_out, 30, 0);
+        }
+
+        // TODO: fix this and move to tick function
+        message.dx += 0.03 * (target_x - message.x) + 0.0000003 * (target_x - message.x) * (target_x - message.x) * (target_x - message.x);
+        message.dy += 0.03 * (target_y - message.y) + 0.0000003 * (target_y - message.y) * (target_y - message.y) * (target_y - message.y);
+        message.dx *= 0.82;
+        message.dy *= 0.82;
+        message.x += message.dx;
+        message.y += message.dy;
+        context.fillStyle = color1;
+        context.fillText((message.score > 0 ? '+' : '') + message.score + ': ' + message.text, message.x + 1, message.y + 1, game.width);
+        context.fillStyle = color2;
+        context.fillText((message.score > 0 ? '+' : '') + message.score + ': ' + message.text, message.x, message.y, game.width);
+        text_position += increment;
+    }
+    context.textBaseline = 'alphabetic';
+
+    if (game.state == 'score') {
+        fade_in = Math.min(( game.time - game.score_time) * 5, 1);
+
+        context.fillStyle = game.background_color + fade_in + ')';
+        context.fillRect(0, 0, game.width + 1, game.height + 1);
+
+        draw_arrows(game, context, 'back');
+
+        context.font = "60px " + game.font;
+        context.fillStyle = 'rgba(233, 119, 141,' + fade_in + ')';
+        context.textAlign = 'center';
+        context.fillText("Score: " + game.score, game.width * 0.5, game.height * 0.3);
+
+        context.fillStyle = 'rgba(200, 0, 0, ' + (0.85 * fade_in) + ')';
+        context.beginPath();
+        context.arc(game.width * 0.33, game.height * 0.60 - game.retry_hover * 10, 40, 0, 2 * Math.PI);
+        context.fill();
+
+        context.fillStyle = 'rgba(200, 0, 0, ' + (0.85 * fade_in * game.retry_hover) + ')';
+        context.textAlign = 'center';
+        context.font = "26px " + game.font;
+        context.fillText("Retry", game.width * 0.33, game.height * 0.60 + game.retry_hover * 10 + 44);
+
+        context.fillStyle = 'rgba(30, 10, 190, ' + ((game.score > 0 ? 0.85 : 0.15) * fade_in) + ')';
+        context.beginPath();
+        var x = game.width * 0.66;
+        var y = game.height * 0.60 - game.next_hover * 10;
+        context.moveTo(x - 30, y - 40);
+        context.lineTo(x + 34, y);
+        context.lineTo(x - 30, y + 40);
+        context.fill();
+
+        if (game.score > 0) {
+            context.fillStyle = 'rgba(30, 10, 190, ' + (0.85 * fade_in * game.next_hover) + ')';
+            context.textAlign = 'center';
+            context.font = "26px " + game.font;
+            context.fillText("Next", game.width * 0.66, game.height * 0.60 + game.next_hover * 10 + 44);
+        }
+
+        draw_arrows(game, context, 'front');
+    }
 
     context.fillStyle = game.cursor.color;
     context.fillRect(game.cursor.position.x - game.cursor.radius, game.cursor.position.y, game.cursor.radius * 2 + 1, 1);
@@ -114,7 +221,7 @@ function draw_arrows(game, context, layer) {
             opacity = lerp(animation, 1, 0);
         }
         if (layer == 'front')
-            context.fillStyle = 'rgba(0, 0, 0, ' + opacity * Math.max(0, unlerp(arrow.z, game.arrows.near, game.arrows.far) - 0.02) + ')';
+            context.fillStyle = 'rgba(0, 0, 0, ' + opacity * Math.min(Math.max(0, unlerp(arrow.z, game.arrows.near, game.arrows.far) - 0.02) * 1.2, 1) + ')';
         else
             context.fillStyle = 'rgba(0, 0, 0, ' + opacity * unlerp(arrow.z, game.arrows.far * 4, game.arrows.far) + ')';
         context.beginPath();
@@ -132,65 +239,4 @@ function draw_arrows(game, context, layer) {
         draw_arrow_part(radius, arrow);
         context.fill();
     }
-
-
-    context.font = "30px " + game.font;
-    context.fillStyle = 'rgba(0, 0, 0,' + Math.max(Math.min(game.time - 1, 1), 0) + ')';
-    context.textAlign = 'left';
-    context.fillText("Score: " + Math.round(game.smooth_score), 20, 34);
-
-    if (game.multiplier > 1) {
-        context.font = "30px " + game.font;
-        context.fillStyle = '#f7bd13';
-        context.textAlign = 'right';
-        context.fillText("x" + game.multiplier, game.width - 20, 34);
-    }
-
-    context.textAlign = 'center';
-    var text_position = 60;
-    for (i = 0; i < game.messages.list.length; ++i) {
-        var message = game.messages.list[i];
-        if (message.dx == undefined) {
-            message.dx = 0;
-            message.dy = 0;
-            message.initial_x = message.x;
-            message.initial_y = message.y;
-        }
-        var increment = 30;
-        var color1, color2;
-        if (game.time - message.time < 3) {
-            var fade_in = Math.min(unlerp(game.time - message.time, 0, 0.5), 1);
-            context.font = (40 * fade_in) + "px " + game.font;
-            context.fillStyle = 'rgba(220, 120, 120, ' + (fade_in - Math.max(fade_in - 0.666, 0) * 3) + ')';
-            context.fillText((message.score > 0 ? '+' : '') + message.score, message.initial_x, message.initial_y - 50 * fade_in);
-            context.font = lerp(fade_in, 70, 30) + "px " + game.font;
-            color1 = 'rgba(255, 255, 255,' + fade_in + ')';
-            color2 = (message.score < 0 ? 'rgba(200, 20, 20,' : 'rgba(233, 119, 141,') + fade_in + ')';
-        } else {
-            var fade_out = Math.min(unlerp(game.time - (message.time + 3), 0, 0.5), 1);
-            if (fade_out == 1) {
-                game.messages.list.splice(i, 1);
-                --i;
-                continue;
-            }
-            context.font = lerp(fade_out, 30, 0) + "px " + game.font;
-            color1 = 'rgba(255, 255, 255,' + fade_out + ')';
-            color2 = (message.score < 0 ? 'rgba(200, 20, 20,' : 'rgba(233, 119, 141,') + (1 - fade_out) + ')';
-            increment = lerp(fade_out, 30, 0);
-        }
-        var target_x = game.width * 0.5;
-        var target_y = text_position;
-        message.dx += 0.01 * (target_x - message.x);
-        message.dy += 0.01 * (target_y - message.y);
-        message.dx *= 0.88;
-        message.dy *= 0.88;
-        message.x += message.dx;
-        message.y += message.dy;
-        context.fillStyle = color1;
-        context.fillText((message.score > 0 ? '+' : '') + message.score + ': ' + message.text, message.x + 1, message.y + 1, game.width);
-        context.fillStyle = color2;
-        context.fillText((message.score > 0 ? '+' : '') + message.score + ': ' + message.text, message.x, message.y, game.width);
-        text_position += increment;
-    }
-
 }
