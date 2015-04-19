@@ -31,7 +31,7 @@ var ld32 = {
         height: 20,
         jumper_width: 20,
         jumper_height: 2,
-        background_color: 'rgba(164, 80, 64,',
+        background_color: 'rgba(174, 110, 54,',
         list: []
     },
     peoples: {

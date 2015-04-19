@@ -51,6 +51,8 @@ function init_level(game, level) {
     game.retry_hover = 0;
     game.next_hover = 0;
     game.timeout_start_time = game.time;
+    game.smooth_timeout_start_time = game.timeout_start_time;
+    game.is_timeouting = false;
     game.level_time = game.time;
     game.platforms.list = [];
     for (var i = 0; i < level.platforms.length; ++i) {
@@ -77,6 +79,7 @@ function init_level(game, level) {
             x: people.x,
             y: people.y,
             platform: null,
+            fov_radius: 0,
             fov_center: people.orientation == 'left' ? Math.PI : Math.PI * 2,
             fov_center_velocity: 0
         });

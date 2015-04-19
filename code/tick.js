@@ -326,8 +326,10 @@ function tick_game(game) {
             }
         }
         if (peoples_left == 0) {
-            game.state = 'score';
-            game.score_time = game.time;
+            if (!game.is_timeouting) {
+                game.timeout_start_time = game.time - game.timeout_length * 0.5;
+                game.is_timeouting = true;
+            }
         } else if (peoples_left == 1) {
             for (i = 0; i < game.peoples.list.length; ++i) {
                 people = game.peoples.list[i];
@@ -470,6 +472,8 @@ function tick_game(game) {
             trail: [{x: game.width * 0.5, y: game.height * 0.5, z: game.arrows.near, state: 'tracking'}]
         });
     }
+
+    game.smooth_timeout_start_time = game.smooth_timeout_start_time * 0.95 + game.timeout_start_time * 0.05;
 
     if (game.smooth_score < game.score)
         game.smooth_score += 1;

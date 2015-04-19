@@ -2,7 +2,7 @@ function draw_game(game, context) {
     context.clearRect(0, 0, context.canvas.width, context.canvas.height);
 
     context.fillStyle = game.background_color + Math.min(game.time * 20, 1) + ')';
-    context.fillRect(0, 0, game.width + 1, game.height + 1);
+    context.fillRect(0, 0, game.width, game.height);
 
     for (var i = 0; i < game.peoples.list.length; ++i) {
         var people = game.peoples.list[i];
@@ -33,7 +33,10 @@ function draw_game(game, context) {
         if (people.state == 'selecting_mate') {
             var start_angle = people.fov_center + game.peoples.fov_angle * -0.5;
             var stop_angle = people.fov_center + game.peoples.fov_angle * 0.5;
-            context.fillStyle = game.peoples.colors.fov;
+            var gradient = context.createRadialGradient(people.x, people.y, 0, people.x, people.y, people.fov_radius);
+            gradient.addColorStop(0, 'rgba(228, 168, 218, 0.4)');
+            gradient.addColorStop(1, 'rgba(228, 168, 218, 0)');
+            context.fillStyle = gradient;
             context.beginPath();
             context.moveTo(people.x, people.y);
             context.arc(people.x, people.y, people.fov_radius, start_angle, stop_angle);
@@ -44,7 +47,10 @@ function draw_game(game, context) {
             var angle_center = lerp(animation, people.fov_center, people.target_fov_center);
             start_angle = angle_center + lerp(animation, game.peoples.fov_angle, 0.05) * -0.5;
             stop_angle = angle_center + lerp(animation, game.peoples.fov_angle, 0.05) * 0.5;
-            context.fillStyle = game.peoples.colors.fov;
+            gradient = context.createRadialGradient(people.x, people.y, 0, people.x, people.y, people.fov_radius);
+            gradient.addColorStop(0, 'rgba(228, 168, 218, ' + lerp(animation, 0.4, 0.8) + ')');
+            gradient.addColorStop(1, 'rgba(228, 168, 218, ' + lerp(animation, 0, 0.4) + ')');
+            context.fillStyle = gradient;
             context.beginPath();
             context.moveTo(people.x, people.y);
             context.arc(people.x, people.y, Math.min(lerp(animation, people.fov_radius, mate_distance), mate_distance), start_angle, stop_angle);
@@ -100,10 +106,6 @@ function draw_game(game, context) {
         context.fillText("Bonus: x" + game.multiplier, game.width - 20, 34);
     }
 
-    var timeout_ratio = Math.max(0, (game.time - game.timeout_start_time - game.timeout_length * 0.5) / (game.timeout_length * 0.5));
-    context.fillStyle = 'rgba(80, 40, 200, ' + (0.6 * timeout_ratio) + ' )';
-    context.fillRect(game.width * 0.2, 50, game.width * 0.6 * timeout_ratio, 14);
-
     context.textAlign = 'center';
     context.textBaseline = 'middle';
     var text_position = 60;
@@ -155,11 +157,36 @@ function draw_game(game, context) {
     }
     context.textBaseline = 'alphabetic';
 
+
+    var timeout_ratio = Math.min(1, Math.max(0, (game.time - game.smooth_timeout_start_time - game.timeout_length * 0.5) / (game.timeout_length * 0.5)));
+    if (timeout_ratio > 0) {
+        context.fillStyle = game.background_color + Math.min(timeout_ratio + 5, 1) + ')';
+        var center_x = game.width * 0.5;
+        var center_y = game.height * 0.5;
+        var size = 280 * (1 - timeout_ratio);
+        var lineWidth = 10;
+        context.beginPath();
+        context.moveTo(-lineWidth, -lineWidth);
+        context.lineTo(-lineWidth, game.height + lineWidth);
+        context.lineTo(game.width + lineWidth, game.height + lineWidth);
+        context.lineTo(game.width + lineWidth, -lineWidth);
+        context.closePath();
+        if (timeout_ratio < 1) {
+            context.moveTo(center_x, center_y - size * 0.75);
+            context.arc(center_x + size, center_y - size * 0.75, size, -Math.PI, Math.PI / 5);
+            context.lineTo(center_x, center_y + size * 2.25);
+            context.arc(center_x - size, center_y - size * 0.75, size, Math.PI - Math.PI / 5, 0);
+            context.closePath();
+        }
+        context.strokeStyle = '#fff';
+        context.lineJoin = 'round';
+        context.lineWidth = lineWidth;
+        context.stroke();
+        context.fill();
+    }
+
     if (game.state == 'score') {
         fade_in = Math.min(( game.time - game.score_time) * 5, 1);
-
-        context.fillStyle = game.background_color + fade_in + ')';
-        context.fillRect(0, 0, game.width + 1, game.height + 1);
 
         draw_arrows(game, context, 'back');
 
