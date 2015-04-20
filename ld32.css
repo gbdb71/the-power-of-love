@@ -16,6 +16,8 @@ body {
 }
 
 h1 {
+    font-family: 'Bonbon', sans-serif;
+    font-size: 2em;
     text-align: center;
     margin: 1em;
 }
@@ -28,8 +30,18 @@ h1 {
     -moz-user-select: none;
     -ms-user-select: none;
     -webkit-user-select: none;
+    border-radius: 4px;
 }
 
 #ld32.loaded {
     cursor: none;
+}
+
+.footer {
+    text-align: center;
+    margin: 1em;
+}
+
+.footer a {
+    color: inherit;
 }

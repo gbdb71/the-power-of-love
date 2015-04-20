@@ -350,6 +350,7 @@ function tick_game(game) {
         if (game.time - game.timeout_start_time > game.timeout_length) {
             game.state = 'score';
             game.score_time = game.time;
+            game.arrows.list = [];
         }
     }
 
