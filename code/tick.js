@@ -166,14 +166,14 @@ function tick_game(game) {
                     break;
                 case 'walking':
                     if (people.x + people.dx < people.platform.x_min || people.x + people.dx >= people.platform.x_max) {
-                        if (people.state == 'following_mate' && people.mate.y > people.y) {
+                        if (people.state == 'following_mate' && people.mate.y >= people.y && people.mate.platform != people.platform) {
                             people.movement_state = 'falling';
                             people.platform = null;
-                            break;
                         } else {
                             people.orientation = people.x + people.dx < people.platform.x_min ? 'right' : 'left';
                             people.dx = (people.orientation == 'left' ? -1 : 1) * (people.state == "following_mate" ? game.peoples.run_velocity : game.peoples.walk_velocity);
                         }
+                        break;
                     }
 
                     if (people.state == 'following_mate') {
