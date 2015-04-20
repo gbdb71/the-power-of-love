@@ -301,9 +301,26 @@ function draw_game(game, context) {
         draw_arrows(game, context, 'front');
     }
 
-    context.fillStyle = game.cursor.color;
-    context.fillRect(game.cursor.position.x - game.cursor.radius, game.cursor.position.y, game.cursor.radius * 2 + 1, 1);
-    context.fillRect(game.cursor.position.x, game.cursor.position.y - game.cursor.radius, 1, game.cursor.radius * 2 + 1);
+    center_x = game.cursor.position.x;
+    center_y = game.cursor.position.y;
+    size = 10;
+
+    context.beginPath();
+    context.moveTo(center_x, center_y - size);
+    context.arc(center_x + size, center_y - size, size, -Math.PI, Math.PI / 5);
+    context.lineTo(center_x, center_y + size * 2);
+    context.arc(center_x - size, center_y - size, size, Math.PI - Math.PI / 5, 0);
+    context.closePath();
+    context.moveTo(center_x - 6, center_y - 6);
+    context.lineTo(center_x + 6, center_y + 6);
+    context.moveTo(center_x + 6, center_y - 6);
+    context.lineTo(center_x - 6, center_y + 6);
+    context.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+    context.lineWidth = 4;
+    context.stroke();
+    context.strokeStyle = 'rgba(221, 85, 136, 1)';
+    context.lineWidth = 2;
+    context.stroke();
 }
 
 function draw_arrows(game, context, layer) {
