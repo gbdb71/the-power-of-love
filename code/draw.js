@@ -277,16 +277,25 @@ function draw_game(game, context) {
         context.beginPath();
         var x = game.width * 0.66;
         var y = game.height * 0.60 - game.next_hover * 10;
-        context.moveTo(x - 30, y - 40);
-        context.lineTo(x + 34, y);
-        context.lineTo(x - 30, y + 40);
+        if (game.current_level == game.levels.length - 1) {
+            context.moveTo(x + 20, y - 40);
+            context.lineTo(x - 44, y);
+            context.lineTo(x + 20, y + 40);
+            context.moveTo(x + 40, y - 40);
+            context.lineTo(x - 24, y);
+            context.lineTo(x + 40, y + 40);
+        } else {
+            context.moveTo(x - 30, y - 40);
+            context.lineTo(x + 34, y);
+            context.lineTo(x - 30, y + 40);
+        }
         context.fill();
 
         if (game.score > 0) {
             context.fillStyle = 'rgba(221, 85, 136, ' + (0.85 * fade_in * game.next_hover) + ')';
             context.textAlign = 'center';
             context.font = "26px " + game.font;
-            context.fillText("Next", game.width * 0.66, game.height * 0.60 + game.next_hover * 10 + 44);
+            context.fillText(game.current_level == game.levels.length - 1 ? "Restart" : "Next", game.width * 0.66, game.height * 0.60 + game.next_hover * 10 + 44);
         }
 
         draw_arrows(game, context, 'front');
